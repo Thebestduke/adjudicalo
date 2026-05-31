@@ -1,11 +1,12 @@
 {
-  "name": "auditor-co",
+  "name": "adjudicalo",
   "version": "1.0.0",
-  "description": "Auditor Jurídico-Técnico de Contratos Estatales Colombianos",
+  "description": "Adjudicalo - auditor juridico-tecnico con OpenAI para contratacion publica colombiana",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "deploy": "netlify deploy --prod"
   },
   "dependencies": {
     "dotenv": "^16.4.5",
