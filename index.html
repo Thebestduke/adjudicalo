@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>dIAna — Auditoría de Contratación Estatal</title>
+  <meta name="description" content="Asistente forense e inteligente para control de calidad documental y consistencia interdocumental en contratación estatal colombiana y SECOP II.">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- Sidebar / Panel de Configuración -->
+    <aside class="sidebar">
+      
+      <!-- Brand Logo -->
+      <div class="logo-container">
+        <div class="logo-icon">
+          <i data-lucide="shield-check"></i>
+        </div>
+        <div>
+          <div class="logo-text">dIAna</div>
+          <div style="font-size: 0.65rem; color: var(--text-muted); font-weight: 500;">Hecho para Diana Montañez</div>
+        </div>
+        <span class="logo-badge">v2.0</span>
+      </div>
+
+      <!-- Selector de Herramienta Activa -->
+      <div class="sidebar-section" style="margin-bottom: 1.25rem;">
+        <h4 class="sidebar-section-title">
+          <span>Herramienta Activa</span>
+          <i data-lucide="settings" style="width: 14px;"></i>
+        </h4>
+        <div class="form-group" style="margin-bottom: 0;">
+          <select id="tool-select" class="input-field" style="font-weight: 600; border-color: var(--primary);">
+            <option value="auditor">Auditor Jurídico-Técnico</option>
+            <option value="diana">Diana Contrate (Necesidad)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Configuración de API -->
+      <div class="sidebar-section">
+        <h4 class="sidebar-section-title">
+          <span>Configuración API</span>
+          <i data-lucide="key" style="width: 14px;"></i>
+        </h4>
+        
+        <div class="form-group">
+          <label for="api-provider">Proveedor</label>
+          <select id="api-provider" class="input-field">
+            <option value="openai">OpenAI (GPT)</option>
+            <option value="gemini">Google Gemini</option>
+          </select>
+        </div>
+
+
+        <div class="form-group">
+          <label for="model-select">Modelo</label>
+          <select id="model-select" class="input-field">
+            <!-- Dynamically populated -->
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="temperature-input" style="display:flex; justify-content:space-between;">
+            <span>Temperatura</span>
+            <span id="temp-val">0.1</span>
+          </label>
+          <input type="range" id="temperature-input" class="input-field" min="0" max="1" step="0.1" value="0.1" oninput="document.getElementById('temp-val').textContent=this.value" style="padding: 0.25rem 0;" />
+        </div>
+      </div>
+
+      <!-- Carga de Documentos -->
+      <div class="sidebar-section">
+        <h4 class="sidebar-section-title">
+          <span>Carga de Archivos</span>
+          <i data-lucide="file-up" style="width: 14px;"></i>
+        </h4>
+        
+        <div class="form-group">
+          <label id="label-main-upload">Documento Principal (Contrato/Otrosí)</label>
+          <div class="upload-card" id="main-upload-zone">
+            <div class="upload-icon"><i data-lucide="file-text"></i></div>
+            <div class="upload-text-main" id="text-main-upload-title">Arrastra o haz clic</div>
+            <div class="upload-text-sub" id="text-main-upload-sub">PDF, Word, TXT</div>
+          </div>
+          <div class="doc-list" id="main-doc-list"></div>
+        </div>
+
+        <div class="form-group" id="support-upload-group" style="display: none; margin-bottom: 0.5rem;">
+          <label id="label-support-upload">Soportes (Póliza, CDP, Anexos)</label>
+          <div class="upload-card" id="support-upload-zone">
+            <div class="upload-icon"><i data-lucide="files"></i></div>
+            <div class="upload-text-main" id="text-support-upload-title">Arrastra soportes</div>
+            <div class="upload-text-sub" id="text-support-upload-sub">Múltiples archivos (.pdf, .docx)</div>
+          </div>
+          <div class="doc-list" id="support-doc-list"></div>
+        </div>
+
+        <div class="form-group" id="base-upload-group" style="display: none; margin-bottom: 0.5rem;">
+          <label id="label-base-upload">Formato Base de Referencia (Conocimientos)</label>
+          <div class="upload-card" id="base-upload-zone">
+            <div class="upload-icon"><i data-lucide="layout"></i></div>
+            <div class="upload-text-main" id="text-base-upload-title">Arrastra Formato Base</div>
+            <div class="upload-text-sub" id="text-base-upload-sub">Un solo archivo (.docx, .pdf, .txt)</div>
+          </div>
+          <div class="doc-list" id="base-doc-list"></div>
+        </div>
+
+        <div class="form-group" id="knowledge-upload-group" style="margin-bottom: 0.5rem;">
+          <label id="label-knowledge-upload">Normativas y Leyes de Referencia (Conocimientos)</label>
+          <div class="upload-card" id="knowledge-upload-zone">
+            <div class="upload-icon"><i data-lucide="book-open"></i></div>
+            <div class="upload-text-main" id="text-knowledge-upload-title">Arrastra Normativas</div>
+            <div class="upload-text-sub" id="text-knowledge-upload-sub">Múltiples archivos (.pdf, .docx, .txt)</div>
+          </div>
+          <div class="doc-list" id="knowledge-doc-list"></div>
+        </div>
+
+        <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+          <button id="btn-clear-docs" class="btn btn-secondary" style="flex: 1; justify-content: center; font-size: 0.75rem; padding: 0.4rem;">
+            <i data-lucide="trash-2" style="width: 12px;"></i> Limpiar
+          </button>
+          <button id="btn-start-audit" class="btn btn-primary" style="flex: 2; justify-content: center; font-size: 0.75rem; padding: 0.4rem;" disabled>
+            <i data-lucide="play" style="width: 12px;"></i> Auditar
+          </button>
+        </div>
+      </div>
+
+      <!-- Historial de Sesiones -->
+      <div class="sidebar-section" style="flex-grow: 1; min-height: 120px;">
+        <h4 class="sidebar-section-title">
+          <span>Historial Local</span>
+          <i data-lucide="history" style="width: 14px;"></i>
+        </h4>
+        <div class="history-list" id="session-history-list">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="sidebar-footer" style="flex-direction: column; align-items: flex-start; gap: 0.35rem; padding-top: 1rem;">
+        <div style="display: flex; justify-content: space-between; width: 100%; align-items: center; font-size: 0.7rem; color: var(--text-muted);">
+          <span>Privacidad 100% Local</span>
+          <i data-lucide="lock" style="width: 12px;"></i>
+        </div>
+        <div style="font-size: 0.65rem; color: var(--primary); font-weight: 700;">Hecho para Diana Montañez</div>
+      </div>
+
+    </aside>
+
+    <!-- Main Content Workspace -->
+    <main class="main-workspace">
+      
+      <!-- Top Navigation Tabs -->
+      <header class="nav-header">
+        <nav class="tab-nav">
+          <button class="tab-btn active" data-tab="activa" id="tab-btn-activa">
+            <i data-lucide="terminal" style="width: 14px;"></i> Auditoría Activa
+          </button>
+          <button class="tab-btn" data-tab="resumen" id="tab-btn-resumen">
+            <i data-lucide="layout-dashboard" style="width: 14px;"></i> Resumen Ejecutivo
+          </button>
+          <button class="tab-btn" data-tab="dictamen" id="tab-btn-dictamen">
+            <i data-lucide="activity" style="width: 14px;"></i> Dictamen y Ficha
+          </button>
+          <button class="tab-btn" data-tab="matriz" id="tab-btn-matriz">
+            <i data-lucide="table" style="width: 14px;"></i> Matriz de Hallazgos
+          </button>
+          <button class="tab-btn" data-tab="redlines" id="tab-btn-redlines">
+            <i data-lucide="git-merge" style="width: 14px;"></i> Redlines y Word
+          </button>
+          <button class="tab-btn" data-tab="faltantes" id="tab-btn-faltantes">
+            <i data-lucide="check-square" style="width: 14px;"></i> Faltantes y RACCCA
+          </button>
+          <button class="tab-btn" data-tab="compare">
+            <i data-lucide="columns" style="width: 14px;"></i> Comparación Literal
+          </button>
+          <button class="tab-btn" data-tab="prompt">
+            <i data-lucide="sliders" style="width: 14px;"></i> Editor de Prompt
+          </button>
+        </nav>
+      </header>
+
+      <!-- Tab Content 1: Auditoría Activa / Consola -->
+      <section class="tab-content active" id="tab-activa">
+        <div class="audit-workspace-layout">
+          
+          <!-- Input Preview Pane -->
+          <div class="pane">
+            <div class="pane-header">
+              <span class="pane-title" id="preview-pane-title"><i data-lucide="file-code" style="width: 14px;"></i> Textos del Contrato cargados</span>
+            </div>
+            <div class="pane-content" style="height: 100%; display: flex; flex-direction: column; padding: 0.75rem;">
+              <div class="document-input-box" style="flex: 1; display: flex; flex-direction: column;">
+                <div class="document-input-box-header">
+                  <span id="main-doc-input-box-title">DOCUMENTOS DEL EXPEDIENTE</span>
+                  <span style="font-weight: 400;">Pega o edita el texto consolidado</span>
+                </div>
+                <div class="document-input-box-body" style="flex: 1; display: flex;">
+                  <textarea id="main-doc-text" class="textarea-input" style="flex: 1; min-height: 450px;" placeholder="Los textos de los documentos cargados se consolidarán aquí automáticamente para su análisis forense de coherencia..."></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Output Live Stream Pane -->
+          <div class="pane">
+            <div class="pane-header">
+              <span class="pane-title" id="console-pane-title"><i data-lucide="terminal" style="width: 14px;"></i> Salida Forense del Auditor</span>
+            </div>
+            <div class="pane-content" style="background-color: #040810;">
+              <div class="output-console">
+                <div class="stream-output" id="stream-console">
+                  <div class="empty-state">
+                    <div class="empty-state-icon"><i data-lucide="eye"></i></div>
+                    <div class="empty-state-title">Consola Lista</div>
+                    <div class="empty-state-desc">Introduce la API Key, sube tus documentos y presiona 'Auditar' para ver el análisis forense en tiempo real.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Tab Content: Resumen Ejecutivo -->
+      <section class="tab-content" id="tab-resumen">
+        <div id="resumen-ejecutivo-container" class="resumen-container">
+          <div class="empty-state">
+            <div class="empty-state-icon"><i data-lucide="layout-dashboard"></i></div>
+            <div class="empty-state-title">Resumen Ejecutivo</div>
+            <div class="empty-state-desc">Ejecuta la auditoría de Diana Contrate para ver el resumen consolidado de todos los hallazgos críticos.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Tab Content 2: Dictamen & Ficha Maestra -->
+      <section class="tab-content" id="tab-dictamen">
+        <div class="dashboard-grid">
+          
+          <!-- Dictamen Ejecutivo Card -->
+          <div class="dictamen-card">
+            <h3 class="section-title" id="dictamen-card-title"><i data-lucide="award" style="width: 16px;"></i> Dictamen Forense Ejecutivo</h3>
+            <div id="dictamen-badge-container">
+              <!-- Dynamically populated badge -->
+            </div>
+            <p class="dictamen-text" id="dictamen-text-content">
+              Por favor, ejecuta la auditoría desde la primera pestaña para generar el dictamen forense.
+            </p>
+          </div>
+
+          <!-- Ficha Maestra Container -->
+          <div class="ficha-maestra-container" id="ficha-maestra-panel">
+            <h3 class="section-title" id="ficha-card-title"><i data-lucide="database" style="width: 16px;"></i> Ficha Maestra de Datos Críticos</h3>
+            <div class="ficha-grid" id="ficha-maestra-grid">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <!-- Conflictos entre soportes (opcional, aparece si hay) -->
+          <div class="conflictos-panel" id="conflictos-panel">
+            <h3 class="section-title" id="conflictos-card-title"><i data-lucide="alert-triangle" style="width: 16px; color: var(--severity-high);"></i> Conflictos entre Documentos Soporte</h3>
+            <div id="conflictos-panel-container">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Tab Content 3: Matriz de Hallazgos -->
+      <section class="tab-content" id="tab-matriz">
+        <div class="findings-container">
+          
+          <!-- Search & Severity filter toolbar -->
+          <div class="findings-toolbar">
+            <div class="search-wrapper">
+              <i data-lucide="search" class="search-icon" style="width: 14px; height: 14px;"></i>
+              <input type="text" id="finding-search" class="input-field search-input" placeholder="Buscar en la matriz...">
+            </div>
+
+            <div class="filter-group">
+              <button class="filter-badge active" data-severity="all">Todos</button>
+              <button class="filter-badge" data-severity="alta">Severidad Alta</button>
+              <button class="filter-badge" data-severity="media">Severidad Media</button>
+              <button class="filter-badge" data-severity="baja">Severidad Baja</button>
+            </div>
+
+            <!-- Botón de comparación independiente contra formato base (solo Diana) -->
+            <button id="btn-run-matriz" class="btn btn-primary" style="display:none; font-size:0.72rem; padding:0.35rem 0.85rem;">
+              <i data-lucide="refresh-cw" style="width:12px;"></i> Re-comparar con Formato Base
+            </button>
+          </div>
+
+          <!-- Table Wrapper -->
+          <div class="table-responsive">
+            <table class="findings-table">
+              <thead id="findings-thead">
+                <tr>
+                  <th style="width: 70px;">ID</th>
+                  <th style="width: 120px;">Ubicación</th>
+                  <th style="width: 130px;">Tipo</th>
+                  <th>Evidencia Principal</th>
+                  <th>Evidencia Soporte</th>
+                  <th>Diagnóstico</th>
+                  <th>Corrección Aplicable</th>
+                  <th style="width: 100px;">Severidad</th>
+                </tr>
+              </thead>
+              <tbody id="findings-tbody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Tab Content 4: Redlines & Comentarios Word -->
+      <section class="tab-content" id="tab-redlines">
+        <div class="redlines-container">
+          
+          <!-- Left: Redlines (Deletions / Insertions) -->
+          <div class="redline-pane">
+            <h3 class="section-title" id="redline-card-title"><i data-lucide="git-commit" style="width: 16px;"></i> Redlines (Modificaciones Listas para Pegar)</h3>
+            <div class="redlines-list" id="redlines-render-list">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <!-- Right: Comments for Microsoft Word -->
+          <div class="redline-pane">
+            <h3 class="section-title" id="comment-card-title"><i data-lucide="message-square" style="width: 16px;"></i> Comentarios Accionables para insertar en Word</h3>
+            <div class="comments-list" id="comments-render-list">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Tab Content 5: Faltantes & Autocontrol RACCCA -->
+      <section class="tab-content" id="tab-faltantes">
+        <div class="split-grid-5">
+          
+          <!-- Left Checklist panel -->
+          <div class="card-panel">
+            <h3 class="section-title" id="faltantes-card-title"><i data-lucide="file-warning" style="width: 16px; color: var(--severity-medium);"></i> Documentos Faltantes y No Verificables</h3>
+            <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1rem;" id="faltantes-card-desc">Marque los documentos faltantes a medida que los consiga en el expediente contractual.</p>
+            <div class="missing-checklist" id="faltantes-checklist">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <!-- Right: Quality Assurance RACCCA -->
+          <div class="card-panel">
+            <h3 class="section-title" id="raccca-card-title"><i data-lucide="check-check" style="width: 16px; color: var(--accent-success);"></i> Módulo de Autocontrol RACCCA</h3>
+            <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1rem;" id="raccca-card-desc">Verificación del auditor contra los estándares de calidad del control forense.</p>
+            <div class="raccca-list" id="raccca-render-list">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Tab Content 6: Comparación Literal -->
+      <section class="tab-content" id="tab-compare">
+        <div class="comparador-layout">
+          
+          <!-- Side by side inputs -->
+          <div class="comparador-inputs">
+            <div class="document-input-box">
+              <div class="document-input-box-header">
+                <span>FRAGMENTO A (Texto Original / Secop)</span>
+                <span>Pega el fragmento a comparar</span>
+              </div>
+              <div class="document-input-box-body">
+                <textarea id="compare-text-a" class="textarea-input comparison-textarea" placeholder="Pega el texto del documento original o borrador aquí..."></textarea>
+              </div>
+            </div>
+            <div class="document-input-box">
+              <div class="document-input-box-header">
+                <span>FRAGMENTO B (Texto Modificado / Anexo)</span>
+                <span>Pega el fragmento de la modificación</span>
+              </div>
+              <div class="document-input-box-body">
+                <textarea id="compare-text-b" class="textarea-input comparison-textarea" placeholder="Pega el texto del soporte, otrosí, o versión final a contrastar..."></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="comparador-actions">
+            <button id="btn-compare" class="btn btn-primary" style="padding: 0.6rem 2rem;">
+              <i data-lucide="git-pull-request"></i> Comparar Literalmente
+            </button>
+          </div>
+
+          <!-- Results Table -->
+          <div id="compare-results-box">
+            <!-- Dynamically populated -->
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Tab Content 7: Ajustes de Prompt de Sistema -->
+      <section class="tab-content" id="tab-prompt">
+        <div class="card-panel" style="display:flex; flex-direction:column; height:calc(100vh - 120px);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+            <div>
+              <h3 class="section-title" id="prompt-card-title" style="margin-bottom:0.25rem;"><i data-lucide="cpu" style="width: 16px;"></i> Prompt de Sistema Forense</h3>
+              <p style="font-size: 0.75rem; color: var(--text-muted);">Puedes modificar las reglas y los métodos del auditor según tus requisitos específicos.</p>
+            </div>
+            <button id="btn-reset-prompt" class="btn btn-secondary">
+              <i data-lucide="rotate-ccw" style="width: 14px;"></i> Restaurar por Defecto
+            </button>
+          </div>
+          <div style="flex-grow:1; background-color: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 8px; padding: 0.5rem; overflow:hidden;">
+            <textarea id="system-prompt-textarea" class="textarea-input" style="font-family:'Fira Code', monospace; font-size:0.75rem; line-height:1.5;"></textarea>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+  </div>
+
+  <!-- Loading libraries from CDNs -->
+  <!-- Mammoth.js for docx parsing -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+  
+  <!-- PDF.js for pdf parsing -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+  
+  <!-- Lucide icons -->
+  <script src="https://cdn.jsdelivr.net/npm/lucide/dist/umd/lucide.min.js"></script>
+
+  <!-- Application scripts -->
+  <script src="parser.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
