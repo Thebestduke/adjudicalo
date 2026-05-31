@@ -1,6 +1,6 @@
 /**
  * Auditor CO — Backend Proxy
- * Recibe peticiones del frontend y las reenvía a OpenAI/Gemini
+ * Recibe peticiones del frontend y las reenvía a OpenAI
  * con la API key guardada en .env (nunca expuesta al browser).
  */
 
@@ -61,51 +61,9 @@ app.post('/api/openai', async (req, res) => {
   }
 });
 
-// ── Proxy Gemini ──────────────────────────────────────────────────────────────
-app.post('/api/gemini', async (req, res) => {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    return res.status(500).json({ error: 'GEMINI_API_KEY no configurada en el servidor (.env)' });
-  }
-
-  const { model, stream: isStream, ...body } = req.body;
-  if (!model) return res.status(400).json({ error: 'Falta el campo "model" en el body' });
-
-  const endpoint = isStream
-    ? `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?key=${apiKey}&alt=sse`
-    : `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-
-  try {
-    const upstream = await fetch(endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
-    });
-
-    if (!upstream.ok) {
-      const err = await upstream.text();
-      return res.status(upstream.status).send(err);
-    }
-
-    if (isStream) {
-      res.setHeader('Content-Type', 'text/event-stream');
-      res.setHeader('Cache-Control', 'no-cache');
-      res.setHeader('X-Accel-Buffering', 'no');
-      Readable.fromWeb(upstream.body).pipe(res);
-    } else {
-      const data = await upstream.json();
-      res.json(data);
-    }
-  } catch (err) {
-    console.error('Gemini proxy error:', err.message);
-    res.status(500).json({ error: err.message });
-  }
-});
-
 // ── Iniciar servidor ──────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`\n✓ dIAna corriendo en http://localhost:${PORT}\n`);
   if (!process.env.OPENAI_API_KEY) console.warn('  ⚠  OPENAI_API_KEY no definida en .env');
-  if (!process.env.GEMINI_API_KEY)  console.warn('  ⚠  GEMINI_API_KEY no definida en .env');
 });

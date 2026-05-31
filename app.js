@@ -184,8 +184,7 @@ No debes inventar anexos, soportes, valores, fechas, responsables ni justificaci
 const state = {
   provider: 'openai',
   model: {
-    openai: 'gpt-4o-mini',
-    gemini: 'gemini-1.5-flash'
+    openai: 'gpt-4o-mini'
   },
   temperature: 0.1,
   mainDocument: { name: '', text: '', size: 0 },
@@ -215,17 +214,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Setup Settings and State from localStorage
 function loadSettings() {
-  const savedProvider    = localStorage.getItem('auditor_provider');
   const savedOpenaiModel = localStorage.getItem('auditor_model_openai');
-  const savedGeminiModel = localStorage.getItem('auditor_model_gemini');
   const savedTemp        = localStorage.getItem('auditor_temp');
   const savedActiveTool  = localStorage.getItem('auditor_active_tool');
   const savedPromptAuditor = localStorage.getItem('auditor_prompt');
   const savedPromptDiana   = localStorage.getItem('auditor_prompt_diana');
 
-  if (savedProvider)    state.provider = savedProvider;
+  state.provider = 'openai';
+  localStorage.setItem('auditor_provider', 'openai');
+  localStorage.removeItem('auditor_model_gemini');
   if (savedOpenaiModel) state.model.openai = savedOpenaiModel;
-  if (savedGeminiModel) state.model.gemini = savedGeminiModel;
   if (savedTemp)        state.temperature  = parseFloat(savedTemp);
   if (savedActiveTool)  state.activeTool   = savedActiveTool;
   if (savedPromptAuditor) state.promptAuditor = savedPromptAuditor;
@@ -240,17 +238,17 @@ function loadSettings() {
 
   state.systemPrompt = state.activeTool === 'auditor' ? state.promptAuditor : state.promptDiana;
 
-  document.getElementById('api-provider').value  = state.provider;
-  document.getElementById('model-select').value  = state.model[state.provider];
+  const providerSelect = document.getElementById('api-provider');
+  if (providerSelect) providerSelect.value = 'openai';
+  document.getElementById('model-select').value  = state.model.openai;
   document.getElementById('temperature-input').value = state.temperature;
   document.getElementById('tool-select').value   = state.activeTool;
   document.getElementById('system-prompt-textarea').value = state.systemPrompt;
 }
 
 function saveSettings() {
-  localStorage.setItem('auditor_provider', state.provider);
+  localStorage.setItem('auditor_provider', 'openai');
   localStorage.setItem('auditor_model_openai', state.model.openai);
-  localStorage.setItem('auditor_model_gemini', state.model.gemini);
   localStorage.setItem('auditor_temp', state.temperature.toString());
   localStorage.setItem('auditor_active_tool', state.activeTool);
 
@@ -291,11 +289,15 @@ function setupEventListeners() {
   });
 
   // Settings Events
-  document.getElementById('api-provider').addEventListener('change', (e) => {
-    state.provider = e.target.value;
-    updateModelOptions();
-    saveSettings();
-  });
+  const providerSelect = document.getElementById('api-provider');
+  if (providerSelect) {
+    providerSelect.addEventListener('change', () => {
+      state.provider = 'openai';
+      providerSelect.value = 'openai';
+      updateModelOptions();
+      saveSettings();
+    });
+  }
 
   const btnRunMatriz = document.getElementById('btn-run-matriz');
   if (btnRunMatriz) {
@@ -304,7 +306,7 @@ function setupEventListeners() {
 
 
   document.getElementById('model-select').addEventListener('change', (e) => {
-    state.model[state.provider] = e.target.value;
+    state.model.openai = e.target.value;
     saveSettings();
   });
 
@@ -444,18 +446,10 @@ function updateModelOptions() {
   const modelSelect = document.getElementById('model-select');
   modelSelect.innerHTML = '';
 
-  let options = [];
-  if (state.provider === 'openai') {
-    options = [
-      { value: 'gpt-4o-mini', label: 'GPT-4o-Mini (Económico / Recomendado)' },
-      { value: 'gpt-4o', label: 'GPT-4o (Avanzado / Costoso)' }
-    ];
-  } else {
-    options = [
-      { value: 'gemini-1.5-flash', label: 'Gemini 1.5 Flash (Económico / Recomendado)' },
-      { value: 'gemini-1.5-pro', label: 'Gemini 1.5 Pro (Avanzado / Costoso)' }
-    ];
-  }
+  const options = [
+    { value: 'gpt-4o-mini', label: 'GPT-4o-Mini (Económico / Recomendado)' },
+    { value: 'gpt-4o', label: 'GPT-4o (Avanzado / Costoso)' }
+  ];
 
   options.forEach(opt => {
     const el = document.createElement('option');
@@ -464,7 +458,7 @@ function updateModelOptions() {
     modelSelect.appendChild(el);
   });
 
-  modelSelect.value = state.model[state.provider];
+  modelSelect.value = state.model.openai;
 }
 
 function switchTab(tabId) {
@@ -829,28 +823,16 @@ ${knowledgeText}
     let url = '';
     let body = {};
 
-    if (state.provider === 'openai') {
-      url = '/api/openai';
-      body = {
-        model: state.model.openai,
-        messages: [
-          { role: 'system', content: state.systemPrompt },
-          { role: 'user', content: userContent }
-        ],
-        temperature: state.temperature,
-        stream: true
-      };
-    } else {
-      url = '/api/gemini';
-      body = {
-        model: state.model.gemini,
-        stream: true,
-        contents: [{ role: 'user', parts: [{ text: userContent }] }],
-        systemInstruction: { parts: [{ text: state.systemPrompt }] },
-        generationConfig: { temperature: state.temperature
-        }
-      };
-    }
+    url = '/api/openai';
+    body = {
+      model: state.model.openai,
+      messages: [
+        { role: 'system', content: state.systemPrompt },
+        { role: 'user', content: userContent }
+      ],
+      temperature: state.temperature,
+      stream: true
+    };
 
     const response = await fetch(url, {
       method: 'POST',
@@ -889,11 +871,7 @@ ${knowledgeText}
             const parsed = JSON.parse(jsonStr);
             let chunkText = '';
 
-            if (state.provider === 'openai') {
-              chunkText = parsed.choices?.[0]?.delta?.content || '';
-            } else if (state.provider === 'gemini') {
-              chunkText = parsed.candidates?.[0]?.content?.parts?.[0]?.text || '';
-            }
+            chunkText = parsed.choices?.[0]?.delta?.content || '';
 
             if (chunkText) {
               responseText += chunkText;
@@ -986,13 +964,8 @@ ${textB}`;
     const headers = { 'Content-Type': 'application/json' };
     let url = '', body = {};
 
-    if (state.provider === 'openai') {
-      url = '/api/openai';
-      body = { model: state.model.openai, messages: [{ role: 'system', content: compPrompt }, { role: 'user', content: userContent }], temperature: 0.1 };
-    } else {
-      url = '/api/gemini';
-      body = { model: state.model.gemini, contents: [{ role: 'user', parts: [{ text: `System instructions:\n${compPrompt}\n\nUser Input:\n${userContent}` }] }], generationConfig: { temperature: 0.1 } };
-    }
+    url = '/api/openai';
+    body = { model: state.model.openai, messages: [{ role: 'system', content: compPrompt }, { role: 'user', content: userContent }], temperature: 0.1 };
 
     const response = await fetch(url, { method: 'POST', headers, body: JSON.stringify(body) });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -1000,11 +973,7 @@ ${textB}`;
     const data = await response.json();
     let replyText = '';
 
-    if (state.provider === 'openai') {
-      replyText = data.choices?.[0]?.message?.content || '';
-    } else {
-      replyText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    }
+    replyText = data.choices?.[0]?.message?.content || '';
 
     // Build Table UI
     renderComparisonTable(replyText);
@@ -1047,21 +1016,14 @@ async function runCoherenceCheck() {
     const headers = { 'Content-Type': 'application/json' };
     let url = '', body = {};
 
-    if (state.provider === 'openai') {
-      url = '/api/openai';
-      body = { model: state.model.openai, messages: [{ role: 'system', content: sysPrompt }, { role: 'user', content: userPrompt }], temperature: 0.1 };
-    } else {
-      url = '/api/gemini';
-      body = { model: state.model.gemini, contents: [{ role: 'user', parts: [{ text: sysPrompt + '\n\n' + userPrompt }] }], generationConfig: { temperature: 0.1 } };
-    }
+    url = '/api/openai';
+    body = { model: state.model.openai, messages: [{ role: 'system', content: sysPrompt }, { role: 'user', content: userPrompt }], temperature: 0.1 };
 
     const response = await fetch(url, { method: 'POST', headers, body: JSON.stringify(body) });
     if (!response.ok) { const t = await response.text(); throw new Error(`HTTP ${response.status}: ${t}`); }
 
     const data = await response.json();
-    const replyText = state.provider === 'openai'
-      ? (data.choices?.[0]?.message?.content || '')
-      : (data.candidates?.[0]?.content?.parts?.[0]?.text || '');
+    const replyText = data.choices?.[0]?.message?.content || '';
 
     renderCoherenceResults(replyText);
 
@@ -1382,21 +1344,14 @@ ${docText}
     const headers = { 'Content-Type': 'application/json' };
     let url = '', body = {};
 
-    if (state.provider === 'openai') {
-      url = '/api/openai';
-      body = { model: state.model.openai, messages: [{ role: 'system', content: MATRIZ_PROMPT }, { role: 'user', content: userContent }], temperature: 0.1 };
-    } else {
-      url = '/api/gemini';
-      body = { model: state.model.gemini, contents: [{ role: 'user', parts: [{ text: MATRIZ_PROMPT + '\n\n' + userContent }] }], generationConfig: { temperature: 0.1 } };
-    }
+    url = '/api/openai';
+    body = { model: state.model.openai, messages: [{ role: 'system', content: MATRIZ_PROMPT }, { role: 'user', content: userContent }], temperature: 0.1 };
 
     const response = await fetch(url, { method: 'POST', headers, body: JSON.stringify(body) });
     if (!response.ok) { const t = await response.text(); throw new Error(`HTTP ${response.status}: ${t.substring(0, 200)}`); }
 
     const data = await response.json();
-    const replyText = state.provider === 'openai'
-      ? (data.choices?.[0]?.message?.content || '')
-      : (data.candidates?.[0]?.content?.parts?.[0]?.text || '');
+    const replyText = data.choices?.[0]?.message?.content || '';
 
     // Parse the full 8-section response and render all tabs
     const parsedData = Parser.parseDiana(replyText);
