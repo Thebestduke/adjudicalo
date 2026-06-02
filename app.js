@@ -60,123 +60,237 @@ Tono técnico, sobrio y operativo. Cero relleno. Máxima precisión y trazabilid
 
 // System Prompt for Diana Contrate
 const DIANA_SYSTEM_PROMPT = `Actúa como un auditor experto en contratación pública colombiana, con especialización y maestría en contratación pública y control documental de documentos de necesidad de contratación. Tu función es revisar los documentos de necesidad que el usuario cargue conforme a la normatividad colombiana, identifica si hay coherencia entre los diferentes capítulos del documento y luego compararlos contra el documento base incluido en tus conocimientos, denominado “Formato de Radicación de Necesidad de Contratación ante la Unidad de Compras Públicas” y la coherencia entre documentos.
-Debes verificar si el documento entregado es coherente en si mismo y además verifica si conserva la estructura, títulos, subtítulos, tablas, anexos y elementos sustanciales del formato base. Tu revisión debe enfocarse en aspectos contractuales y especialmente en detectar si el documento analizado eliminó, omitió, modificó,  o alteró el orden de alguno de los títulos o apartados exigidos.
-Lo primero que haces es  verificar cada título del formato base mediante búsqueda textual específica dentro del documento revisado. No puedes clasificar un título como “No cumple” únicamente porque no aparezca en el primer fragmento visible o porque el documento esté truncado. Si el archivo es extenso, busca expresamente cada sección por palabras clave y variantes de nombre. Solo marca “No cumple” cuando hayas confirmado que el título no aparece en el documento. Si el título aparece más adelante, evalúa su contenido como “Cumple” o “Cumple parcialmente”.
+
+Debes verificar si el documento entregado es coherente en si mismo y además verifica si conserva la estructura, títulos, subtítulos, tablas, anexos y elementos sustanciales del formato base. Tu revisión debe enfocarse en aspectos contractuales y especialmente en detectar si el documento analizado eliminó, omitió, modificó, o alteró el orden de alguno de los títulos o apartados exigidos.
+
+Lo primero que haces es verificar cada título del formato base mediante búsqueda textual específica dentro del documento revisado. No puedes clasificar un título como “No cumple” únicamente porque no aparezca en el primer fragmento visible o porque el documento esté truncado. Si el archivo es extenso, busca expresamente cada sección por palabras clave y variantes de nombre. Solo marca “No cumple” cuando hayas confirmado que el título no aparece en el documento. Si el título aparece más adelante, evalúa su contenido como “Cumple” o “Cumple parcialmente”.
+
 Diferencia entre “no encontrado por limitación de lectura” y “omitido en el documento”. Si no puedes verificar el documento completo, debes advertirlo expresamente.
-Durante la revisión del documento de necesidad, estudios previos, anexos técnicos, fichas técnicas, presupuesto o cualquier documento soporte, deberás generar una alerta expresa cuando se evidencie cualquiera de las siguientes situaciones: 1. Referencia al impuesto de timbre marca como Alerta Alta. 2. Inclusión de marcas específicas en bienes o servicios Cuando se evidencie una marca específica, es decir si se insertó una marca para algún elemento esto es grave. 3. Cuando hay incoherencia entre el propio documento o entre documentos. 
+
+Durante la revisión del documento de necesidad, estudios previos, anexos técnicos, fichas técnicas, presupuesto o cualquier documento soporte, deberás generar una alerta expresa cuando se evidencie cualquiera de las siguientes situaciones: 1. Referencia al impuesto de timbre marca como Alerta Alta. 2. Inclusión de marcas específicas en bienes o servicios Cuando se evidencie una marca específica, es decir si se insertó una marca para algún elemento esto es grave. 3. Cuando hay incoherencia entre el propio documento o entre documentos.
+
 Documento base de comparación. Usa como referencia obligatoria el formato base cargado en tus conocimientos. Este documento contiene, entre otros, los siguientes bloques principales:
+
 Requerimiento: bien, servicio, obra u otro.
+
 Datos del solicitante.
+
 Anexos.
+
 Documentos o constancias técnicas especiales.
+
 Necesidad.
+
 Descripción de la necesidad.
+
 Antecedentes.
+
 Alternativas estudiadas para satisfacer la necesidad.
+
 Alcance de la necesidad.
+
 Coherencia con los instrumentos de planeación.
+
 Propuesta de obligaciones específicas.
+
 Requisitos ambientales.
+
 Requisitos en materia de seguridad y salud en el trabajo.
+
 Condiciones técnicas mínimas del contratista.
+
 Criterios adicionales y condiciones técnicas del contratista de mayor valor o calidad.
+
 Plazo de ejecución del contrato.
+
 Fecha estimada en la que se requiere la obra, bien o servicio terminado.
+
 Periodicidad y forma de entrega.
+
 Acuerdos de Niveles de Servicio — ANS.
+
 Riesgos previsibles.
+
 Observaciones generales.
+
 Territorialización del bien o servicio solicitado.
+
 Valor estimado y justificación.
+
 Identificación presupuestal.
+
 Supervisión o interventoría.
+
 Información de las personas designadas por la dependencia solicitante.
+
 Firma, elaboró, revisó y aprobó.
+
 Instrucciones de auditoría
+
 Cuando el usuario cargue un documento de necesidad, realiza la revisión siguiendo estos pasos:
+
 Identifica el tipo de documento cargado.
+
 Confirma si corresponde a un documento de necesidad, formato de radicación, solicitud de contratación o documento equivalente.
+
 Compara la estructura contra el formato base.
+
 Revisa título por título, subtítulo por subtítulo y tabla por tabla.
+
 Detecta omisiones.
+
 Advierte expresamente si falta alguno de los títulos, subtítulos, tablas o campos del formato base. No minimices omisiones. Si falta un título completo, clasifícalo como hallazgo relevante.
+
 Detecta modificaciones de nombres.
+
 Si el documento conserva el contenido pero cambió el nombre del título, indícalo como “título modificado o renombrado” y explica cuál era el nombre original y cuál aparece en el documento revisado.
+
 Detecta eliminaciones indebidas.
+
 Si el documento eliminó una tabla o sección que solo podía eliminarse en casos específicos, por ejemplo anexos de obra pública, arrendamiento, consultoría o prestación de servicios profesionales, verifica si el documento justifica que no aplica. Si no hay justificación clara, márcalo como posible eliminación indebida.
+
 Diferencia entre ausencia total y ausencia parcial.
+
 Clasifica cada hallazgo así:
+
 Cumple: el título y su contenido están presentes.
+
 Cumple parcialmente: el título está presente, pero falta contenido, tabla, explicación o soporte.
+
 No cumple: el título o elemento fue omitido.
+
 No aplica justificado: el documento explica razonablemente que la sección no aplica.
+
 No aplica no justificado: la sección fue eliminada o marcada como no aplicable sin explicación suficiente.
+
 Evalúa coherencia interna.
+
 Verifica si la necesidad, el alcance, el plazo, las obligaciones, el presupuesto, los riesgos y la supervisión guardan relación entre sí.
+
 No inventes información.
+
 Si un dato no aparece en el documento, debes decir: “No se evidencia en el documento revisado”.
+
 No corrijas el documento directamente salvo que el usuario lo pida.
+
 Tu tarea principal es auditar, advertir omisiones and emitir recomendaciones.
+
 Usa lenguaje profesional, claro y preventivo.
+
 Evita afirmaciones absolutas cuando no tengas certeza. Usa expresiones como “se evidencia”, “no se evidencia”, “podría requerir ajuste”, “se recomienda incorporar”.
+
 Formato obligatorio de respuesta
+
 Entrega siempre la auditoría en este formato:
+
 Informe de auditoría documental
-1. Resultado general
+
+Resultado general
+
 Indica una de estas categorías:
+
 Cumple integralmente
+
 Cumple con observaciones
+
 Cumple parcialmente
+
 No cumple por omisiones relevantes
+
 Incluye un resumen breve de máximo dos líneas.
-2. Matriz de comparación contra el formato base
+
+Matriz de comparación contra el formato base
+
 Presenta una tabla con estas columnas:
-No.	Título o elemento del formato base	Estado	Observación	Recomendación
+
+No. | Título o elemento del formato base | Estado | Observación | Recomendación
+
 En “Estado” usa únicamente:
+
 Cumple / Cumple parcialmente / No cumple / No aplica justificado / No aplica no justificado.
-3. Títulos omitidos o eliminados
+
+Títulos omitidos o eliminados
+
 Incluye una lista expresa de los títulos que no aparecen en el documento revisado.
+
 Si no hay omisiones, responde:
+
 “No se identificaron títulos omitidos frente al formato base.”
-4. Títulos modificados o renombrados
+
+Títulos modificados o renombrados
+
 Incluye una tabla así:
 
-Título original del formato base	Título encontrado en el documento revisado	Observación
+Título original del formato base | Título encontrado en el documento revisado | Observación
 
 Si no hay cambios, responde:
+
 “No se identificaron títulos modificados o renombrados.”
+
 Cuando te entregué otros documentos indícame si hay coherencia entre los mismos o en su contenido.
-5. Elementos incompletos
+
+Elementos incompletos
+
 Identifica secciones que existen, pero están vacías, incompletas o sin soporte suficiente.
-6. Alertas críticas
+
+Alertas críticas
+
 Falta de coherencia entre el propio documento e indica donde y la razón de ello.
-Encuentra una contradicción entre el documento y el ordenamiento jurídico colombiano e indica la razón. 
+
+Encuentra una contradicción entre el documento y el ordenamiento jurídico colombiano e indica la razón.
+
 Incluye alertas cuando falten elementos relevantes como:
+
 Descripción de la necesidad.
+
 Antecedentes.
+
 Alcance de la necesidad.
+
 Coherencia con POAI o Plan Anual de Adquisiciones.
+
 Obligaciones específicas.
+
 Requisitos ambientales.
+
 Requisitos de seguridad y salud en el trabajo.
+
 Condiciones técnicas mínimas.
+
 Plazo de ejecución.
+
 Riesgos previsibles.
+
 Valor estimado y justificación.
+
 Identificación presupuestal.
+
 Supervisión o interventoría.
+
 Clasifica cada alerta como:
+
 Alta: puede afectar la viabilidad o estructuración del proceso contractual.
+
 Media: requiere ajuste para mejorar completitud o trazabilidad.
+
 Baja: aspecto formal o de presentación.
-7. Recomendaciones finales
-Entrega recomendaciones concretas para que el documento quede alineado con el formato base.
-8. Conclusión
+
+Recomendaciones finales
+
+Entrega recomendaciones concretas para que el documento quede alineado con el formato base. En esta parte debes explicarme cada una de las alertas, decirme que es lo que no resulta coherente, el documento que la contenga y señala en que parte del documento se encuentra.
+
+Conclusión
+
 Finaliza con una conclusión breve indicando si el documento puede continuar su trámite o si requiere ajustes previos.
+
 Restricciones
-revisa que exista coherencia con los demás documentos, de no existir manda una alerta critica y grave indicando las incoherencias con los otros documentos. 
+
+revisa que exista coherencia con los demás documentos, de no existir manda una alerta critica y grave indicando las incoherencias con los otros documentos.
+
 No debes omitir hallazgos por considerarlos menores.
+
 No debes asumir que una sección “no aplica” si el documento no lo justifica.
+
 No debes inventar anexos, soportes, valores, fechas, responsables ni justificaciones.`;
 
 // Application State
@@ -199,7 +313,9 @@ const state = {
   matrizComparacionData: null, // parsedData — from runMatrizComparacion
   promptAuditor: DEFAULT_SYSTEM_PROMPT,
   promptDiana: DIANA_SYSTEM_PROMPT,
-  systemPrompt: DEFAULT_SYSTEM_PROMPT
+  systemPrompt: DEFAULT_SYSTEM_PROMPT,
+  chatHistory: [],
+  isChatResponding: false
 };
 
 // Initialize Application
@@ -228,7 +344,7 @@ function loadSettings() {
   if (savedActiveTool)  state.activeTool   = savedActiveTool;
   if (savedPromptAuditor) state.promptAuditor = savedPromptAuditor;
   if (savedPromptDiana) {
-    if (!savedPromptDiana.includes('Falta de coherencia entre el propio documento e indica donde y la razón de ello.')) {
+    if (!savedPromptDiana.includes('el documento que la contenga y señala')) {
       state.promptDiana = DIANA_SYSTEM_PROMPT;
       localStorage.setItem('auditor_prompt_diana', DIANA_SYSTEM_PROMPT);
     } else {
@@ -421,6 +537,9 @@ function setupEventListeners() {
     document.getElementById('main-doc-text').value = '';
     updateFileStats();
     showToast('Documentos limpiados');
+    state.currentAudit = null;
+    resetChat();
+    updateChatContextUI();
   });
 
   // Start Audit
@@ -440,6 +559,57 @@ function setupEventListeners() {
       filterFindingsTable();
     });
   });
+
+  // Chat Tab Events
+  const btnChatSend = document.getElementById('btn-chat-send');
+  if (btnChatSend) {
+    btnChatSend.addEventListener('click', () => sendChatMessage());
+  }
+
+  const chatInputTextarea = document.getElementById('chat-input-textarea');
+  if (chatInputTextarea) {
+    chatInputTextarea.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendChatMessage();
+      }
+    });
+
+    chatInputTextarea.addEventListener('input', () => {
+      // Auto-grow height
+      chatInputTextarea.style.height = 'auto';
+      chatInputTextarea.style.height = (chatInputTextarea.scrollHeight) + 'px';
+    });
+  }
+
+  const btnChatReset = document.getElementById('btn-chat-reset');
+  if (btnChatReset) {
+    btnChatReset.addEventListener('click', () => {
+      if (confirm('¿Estás seguro de reiniciar la conversación?')) {
+        resetChat();
+      }
+    });
+  }
+
+  // Suggestions clicking
+  const suggestionItems = document.querySelectorAll('.suggestion-item');
+  suggestionItems.forEach(item => {
+    item.addEventListener('click', () => {
+      if (state.currentAudit && !state.isChatResponding) {
+        const text = item.textContent.trim();
+        sendChatMessage(text);
+      } else if (!state.currentAudit) {
+        showToast('Por favor realiza una auditoría primero.');
+      }
+    });
+  });
+
+  const tabBtnChat = document.getElementById('tab-btn-chat');
+  if (tabBtnChat) {
+    tabBtnChat.addEventListener('click', () => {
+      updateChatContextUI();
+    });
+  }
 }
 
 function updateModelOptions() {
@@ -905,6 +1075,8 @@ ${knowledgeText}
     // Render results
     renderResults(state.currentAudit.parsed);
     showToast('Auditoría completada exitosamente.');
+    resetChat();
+    updateChatContextUI();
 
     // Automatically switch to the structured results tab
     switchTab('dictamen');
@@ -2021,6 +2193,8 @@ function renderHistoryList() {
       renderResults(audit.parsed);
 
       showToast('Auditoría del historial cargada.');
+      resetChat();
+      updateChatContextUI();
       switchTab('dictamen');
     });
 
@@ -2190,4 +2364,359 @@ function updateUI() {
   if (window.lucide) {
     window.lucide.createIcons();
   }
+}
+
+// ── MÓDULO DE CHAT INTERACTIVO (ChatGPT) ──────────────────────────────────────
+
+function updateChatContextUI() {
+  const statusEl = document.getElementById('chat-context-status');
+  const detailsEl = document.getElementById('chat-context-details');
+  const docEl = document.getElementById('chat-context-doc');
+  const toolEl = document.getElementById('chat-context-tool');
+  const dateEl = document.getElementById('chat-context-date');
+  const chatInput = document.getElementById('chat-input-textarea');
+  const chatSendBtn = document.getElementById('btn-chat-send');
+
+  if (state.currentAudit) {
+    statusEl.style.display = 'none';
+    detailsEl.style.display = 'flex';
+    docEl.textContent = state.currentAudit.mainDocName || 'Texto Pegado/Consolidado';
+    toolEl.textContent = state.currentAudit.tool === 'auditor' ? 'Auditor Jurídico-Técnico' : 'Diana Contrate (Necesidad)';
+    dateEl.textContent = state.currentAudit.date;
+    
+    if (!state.isChatResponding) {
+      chatInput.disabled = false;
+      chatSendBtn.disabled = false;
+      chatInput.placeholder = "Escribe tu consulta sobre la auditoría aquí...";
+    }
+  } else {
+    statusEl.style.display = 'block';
+    detailsEl.style.display = 'none';
+    chatInput.disabled = true;
+    chatSendBtn.disabled = true;
+    chatInput.value = '';
+    chatInput.placeholder = "Debe haber una auditoría activa para chatear...";
+  }
+}
+
+function resetChat() {
+  state.chatHistory = [];
+  const messagesContainer = document.getElementById('chat-messages');
+  if (messagesContainer) {
+    messagesContainer.innerHTML = `
+      <div class="empty-state" id="chat-empty-state">
+        <div class="empty-state-icon"><i data-lucide="message-square"></i></div>
+        <div class="empty-state-title">Chat de Consulta</div>
+        <div class="empty-state-desc">Pregúntale a dIAna sobre las inconsistencias detectadas, las razones de los hallazgos o cómo solventarlos en base al documento auditado.</div>
+      </div>
+    `;
+  }
+  if (window.lucide) window.lucide.createIcons();
+}
+
+function appendMessageToChat(role, text) {
+  const messagesContainer = document.getElementById('chat-messages');
+  if (!messagesContainer) return;
+  
+  // Remove empty state if present
+  const emptyState = document.getElementById('chat-empty-state');
+  if (emptyState) {
+    emptyState.remove();
+  }
+
+  const bubble = document.createElement('div');
+  bubble.className = `chat-bubble ${role}`;
+  
+  if (role === 'user') {
+    bubble.textContent = text;
+  } else {
+    bubble.innerHTML = formatMarkdown(text);
+  }
+
+  messagesContainer.appendChild(bubble);
+  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  
+  if (window.lucide) window.lucide.createIcons();
+}
+
+async function sendChatMessage(customText) {
+  if (state.isChatResponding) return;
+
+  const chatInput = document.getElementById('chat-input-textarea');
+  const text = (customText || chatInput.value).trim();
+  if (!text) return;
+
+  if (!state.currentAudit) {
+    showToast('No hay ninguna auditoría activa para realizar consultas.');
+    return;
+  }
+
+  // Clear input
+  if (!customText) {
+    chatInput.value = '';
+    chatInput.style.height = 'auto';
+  }
+
+  // Remove empty state if present
+  const emptyState = document.getElementById('chat-empty-state');
+  if (emptyState) {
+    emptyState.remove();
+  }
+
+  // Append user message
+  appendMessageToChat('user', text);
+  state.chatHistory.push({ role: 'user', content: text });
+
+  // Disable input & send button
+  state.isChatResponding = true;
+  chatInput.disabled = true;
+  document.getElementById('btn-chat-send').disabled = true;
+
+  // Append empty assistant message with typing indicator
+  const messagesContainer = document.getElementById('chat-messages');
+  const assistantBubble = document.createElement('div');
+  assistantBubble.className = 'chat-bubble assistant';
+  assistantBubble.innerHTML = `
+    <div class="typing-dots">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  `;
+  messagesContainer.appendChild(assistantBubble);
+  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+  try {
+    const auditTool = state.currentAudit.tool;
+    const isAuditor = auditTool === 'auditor';
+    const baseSystemPrompt = isAuditor ? state.promptAuditor : state.promptDiana;
+    const combinedText = document.getElementById('main-doc-text').value.trim();
+
+    const systemPromptContext = `Eres dIAna, un asistente forense experto en auditoría documental de contratación estatal colombiana. Tu rol actual es ayudar al usuario a entender el análisis de auditoría realizado.
+    
+INSTRUCCIONES Y REGLAS DE AUDITORÍA BASE QUE SE APLICARON:
+--- INICIO REGLAS ---
+${baseSystemPrompt}
+--- FIN REGLAS ---
+
+TEXTOS DE LOS DOCUMENTOS DEL EXPEDIENTE AUDITADO:
+--- INICIO DOCUMENTOS ---
+${combinedText}
+--- FIN DOCUMENTOS ---
+
+REPORTE DE AUDITORÍA Y HALLAZGOS GENERADOS:
+--- INICIO REPORTE DE AUDITORÍA ---
+${state.currentAudit.rawOutput}
+--- FIN REPORTE DE AUDITORÍA ---
+
+Tu misión es resolver las dudas del usuario respecto a este reporte y los documentos. Explica con claridad y sustento técnico-jurídico el por qué de cada hallazgo, severidad o inconsistencia detectada. Responde de forma constructiva aportando ejemplos de redacción correctiva si es necesario.
+Sé altamente conciso, directo y preciso. Evita explicaciones extremadamente largas o introducciones de relleno para optimizar el consumo de tokens y reducir costos.`;
+
+    const messagesPayload = [
+      { role: 'system', content: systemPromptContext },
+      ...state.chatHistory
+    ];
+
+    const body = {
+      model: 'gpt-4o-mini', // Se fuerza siempre la versión más económica y eficiente (GPT-4o-Mini)
+      messages: messagesPayload,
+      temperature: 0.2,
+      max_tokens: 1200, // Límite de salida para evitar consumos elevados
+      stream: true
+    };
+
+    const response = await fetch('/api/openai', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(`HTTP ${response.status}: ${errText}`);
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder('utf-8');
+    let buffer = '';
+    let responseText = '';
+
+    // Remove typing dots
+    assistantBubble.innerHTML = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop();
+
+      for (const line of lines) {
+        const cleanLine = line.trim();
+        if (!cleanLine) continue;
+
+        if (cleanLine === 'data: [DONE]') break;
+
+        if (cleanLine.startsWith('data: ')) {
+          const jsonStr = cleanLine.substring(6);
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const chunkText = parsed.choices?.[0]?.delta?.content || '';
+            if (chunkText) {
+              responseText += chunkText;
+              assistantBubble.innerHTML = formatMarkdown(responseText);
+              messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+          } catch (e) {
+            // ignore
+          }
+        }
+      }
+    }
+
+    state.chatHistory.push({ role: 'assistant', content: responseText });
+
+  } catch (err) {
+    console.error('Chat error:', err);
+    assistantBubble.innerHTML = `<span style="color: var(--severity-high); font-weight:600;"><i data-lucide="alert-circle" style="width:14px; vertical-align:middle; margin-right:4px;"></i> Error al generar respuesta: ${err.message}</span>`;
+    if (window.lucide) window.lucide.createIcons();
+  } finally {
+    state.isChatResponding = false;
+    chatInput.disabled = false;
+    document.getElementById('btn-chat-send').disabled = false;
+    updateChatContextUI();
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  }
+}
+
+function formatMarkdown(text) {
+  if (!text) return '';
+  
+  let html = text;
+
+  // Escape HTML tags to prevent XSS
+  html = html
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+
+  // Code Blocks
+  html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (match, lang, code) => {
+    return `<pre><code class="language-${lang}">${code.trim()}</code></pre>`;
+  });
+
+  // Inline Code
+  html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+  // Bold
+  html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+
+  // Italics
+  html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+  html = html.replace(/_([^_]+)_/g, '<em>$1</em>');
+
+  // Blockquotes
+  html = html.replace(/^\s*&gt;\s+(.*)$/gm, '<blockquote>$1</blockquote>');
+
+  // Tables
+  const lines = html.split('\n');
+  let inList = false;
+  let inOrderList = false;
+  let inTable = false;
+  let tableHeaderParsed = false;
+  let processedLines = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    let line = lines[i].trim();
+
+    // Tables
+    if (line.startsWith('|')) {
+      if (!inTable) {
+        inTable = true;
+        tableHeaderParsed = false;
+        processedLines.push('<table>');
+      }
+
+      if (line.match(/^\|[-:\s|]+$/)) {
+        continue;
+      }
+
+      const cells = line.split('|').map(c => c.trim()).filter((c, idx, arr) => idx > 0 && idx < arr.length - 1);
+      
+      if (!tableHeaderParsed) {
+        tableHeaderParsed = true;
+        processedLines.push('<thead><tr>' + cells.map(c => `<th>${c}</th>`).join('') + '</tr></thead><tbody>');
+      } else {
+        processedLines.push('<tr>' + cells.map(c => `<td>${c}</td>`).join('') + '</tr>');
+      }
+      continue;
+    } else if (inTable) {
+      inTable = false;
+      processedLines.push('</tbody></table>');
+    }
+
+    // Headers
+    if (line.startsWith('### ')) {
+      processedLines.push(`<h3>${line.substring(4)}</h3>`);
+      continue;
+    } else if (line.startsWith('## ')) {
+      processedLines.push(`<h2>${line.substring(3)}</h2>`);
+      continue;
+    } else if (line.startsWith('# ')) {
+      processedLines.push(`<h1>${line.substring(2)}</h1>`);
+      continue;
+    }
+
+    // Unordered Lists
+    if (line.startsWith('- ') || line.startsWith('* ')) {
+      if (!inList) {
+        inList = true;
+        processedLines.push('<ul>');
+      }
+      processedLines.push(`<li>${line.substring(2)}</li>`);
+      continue;
+    } else if (inList && !line.startsWith('- ') && !line.startsWith('* ')) {
+      inList = false;
+      processedLines.push('</ul>');
+    }
+
+    // Ordered Lists
+    if (line.match(/^\d+\.\s/)) {
+      if (!inOrderList) {
+        inOrderList = true;
+        processedLines.push('<ol>');
+      }
+      const content = line.replace(/^\d+\.\s/, '');
+      processedLines.push(`<li>${content}</li>`);
+      continue;
+    } else if (inOrderList && !line.match(/^\d+\.\s/)) {
+      inOrderList = false;
+      processedLines.push('</ol>');
+    }
+
+    // Blank lines or regular paragraphs
+    if (line === '') {
+      processedLines.push('<br>');
+    } else {
+      if (line.startsWith('<pre>') || line.startsWith('</pre>') || line.startsWith('<table>') || line.startsWith('</table>') || line.startsWith('<ul>') || line.startsWith('</ul>') || line.startsWith('<ol>') || line.startsWith('</ol>') || line.startsWith('<blockquote>') || line.startsWith('</blockquote>') || line.startsWith('<h')) {
+        processedLines.push(line);
+      } else {
+        processedLines.push(`<p>${line}</p>`);
+      }
+    }
+  }
+
+  if (inList) processedLines.push('</ul>');
+  if (inOrderList) processedLines.push('</ol>');
+  if (inTable) processedLines.push('</tbody></table>');
+
+  html = processedLines.join('\n');
+
+  html = html
+    .replace(/<\/ul>\n<br>\n<ul>/g, '')
+    .replace(/<\/ol>\n<br>\n<ol>/g, '')
+    .replace(/<\/table>\n<br>\n<table>/g, '');
+
+  return html;
 }
